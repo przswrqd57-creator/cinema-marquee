@@ -1,7 +1,12 @@
+"use client"
+
 import Image from "next/image"
+import { useState } from "react"
 
 export default function Home() {
-  const theaters = [
+  const [query, setQuery] = useState("95382")
+  const [searched, setSearched] = useState("95382")
+  const [theaters, setTheaters] = useState([
     {
       name: "Grand Palais Cinema",
       distance: "4.2 miles",
@@ -28,7 +33,33 @@ export default function Home() {
         { title: "Notorious", times: ["1:00 PM", "3:35 PM", "7:00 PM"] },
       ],
     },
-  ]
+  ])
+  const [loading, setLoading] = useState(false)
+
+  async function handleSearch(event) {
+    event.preventDefault()
+    setLoading(true)
+
+    try {
+      const response = await fetch("/api/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query }),
+      })
+
+      const data = await response.json()
+
+      setSearched(data.searched || query)
+      setTheaters(data.theaters || [])
+    } catch (error) {
+      console.error("Search failed", error)
+      alert("Search failed")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div
@@ -39,7 +70,7 @@ export default function Home() {
         <div className="overflow-hidden rounded-[1.5rem] border border-neutral-700 bg-gradient-to-b from-neutral-950 to-black shadow-2xl sm:rounded-[2rem]">
           <div className="border-b border-[#a58d6a]/40 bg-[#e7dcc7] text-black">
             <div
-              className="px-4 py-3 text-center text-[9px] uppercase tracking-[0.32em] sm:px-6 sm:py-4 sm:text-[11px]"
+              className="px-4 py-3 text-center text-[9px] tracking-[0.32em] sm:px-6 sm:py-4 sm:text-[11px]"
               style={{
                 fontFamily: "Helvetica Neue, Arial, sans-serif",
                 fontWeight: 300,
@@ -78,17 +109,25 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="mx-auto mt-6 flex max-w-2xl flex-col gap-3 sm:mt-8 sm:flex-row">
+              <form
+                onSubmit={handleSearch}
+                className="mx-auto mt-6 flex max-w-2xl flex-col gap-3 sm:mt-8 sm:flex-row"
+              >
                 <input
                   className="h-12 w-full rounded-full border border-[#7f6d57] bg-neutral-950 px-5 text-base text-[#f3eadb] outline-none placeholder:text-[#8b7d6b]"
                   placeholder="Enter ZIP code or city"
-                  defaultValue="95382"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
                 />
 
-                <button className="h-12 rounded-full border border-[#e7dcc7] bg-[#e7dcc7] px-6 text-sm font-semibold uppercase tracking-[0.2em] text-black">
-                  Search
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="h-12 rounded-full border border-[#e7dcc7] bg-[#e7dcc7] px-6 text-sm font-semibold uppercase tracking-[0.2em] text-black disabled:opacity-60"
+                >
+                  {loading ? "Searching" : "Search"}
                 </button>
-              </div>
+              </form>
 
               <div className="mt-4 px-2 text-[10px] uppercase tracking-[0.28em] text-[#9f8f78] sm:px-0 sm:text-xs">
                 Within 50 miles
@@ -108,8 +147,9 @@ export default function Home() {
               >
                 Showtimes
               </div>
+
               <div className="mt-2 text-[10px] uppercase tracking-[0.3em] text-amber-100/60 sm:text-xs">
-                Tonight at nearby theatres
+                Search results for {searched}
               </div>
             </div>
           </div>
