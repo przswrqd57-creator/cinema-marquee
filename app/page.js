@@ -6,31 +6,17 @@ import { useState } from "react"
 export default function Home() {
   const [query, setQuery] = useState("95382")
   const [searched, setSearched] = useState("95382")
+  const [resolvedLocation, setResolvedLocation] = useState({
+    label: "Unknown Location",
+    latitude: null,
+    longitude: null,
+  })
   const [theaters, setTheaters] = useState([
     {
-      name: "Grand Palais Cinema",
-      distance: "4.2 miles",
+      name: "Default Test Theater",
+      distance: "1.0 miles",
       movies: [
-        { title: "Casablanca", times: ["1:10 PM", "4:00 PM", "7:20 PM"] },
-        { title: "The Third Man", times: ["2:30 PM", "6:10 PM"] },
-      ],
-    },
-    {
-      name: "Midnight Picture House",
-      distance: "11.8 miles",
-      movies: [
-        {
-          title: "Double Indemnity",
-          times: ["12:45 PM", "5:15 PM", "8:40 PM"],
-        },
-        { title: "Laura", times: ["3:05 PM", "9:10 PM"] },
-      ],
-    },
-    {
-      name: "Majestic Local Theatre",
-      distance: "18.6 miles",
-      movies: [
-        { title: "Notorious", times: ["1:00 PM", "3:35 PM", "7:00 PM"] },
+        { title: "Default Movie", times: ["1:00 PM", "4:00 PM"] },
       ],
     },
   ])
@@ -52,6 +38,13 @@ export default function Home() {
       const data = await response.json()
 
       setSearched(data.searched || query)
+      setResolvedLocation(
+        data.resolvedLocation || {
+          label: "Unknown Location",
+          latitude: null,
+          longitude: null,
+        }
+      )
       setTheaters(data.theaters || [])
     } catch (error) {
       console.error("Search failed", error)
@@ -89,8 +82,7 @@ export default function Home() {
               <p
                 className="mx-auto mt-4 max-w-3xl px-2 text-lg italic leading-7 text-[#d9b786] sm:px-0 sm:text-2xl"
                 style={{
-                  fontFamily:
-                    "Baskerville, Georgia, Times New Roman, serif",
+                  fontFamily: "Baskerville, Georgia, Times New Roman, serif",
                 }}
               >
                 your one location for all movies and showtimes
@@ -151,6 +143,16 @@ export default function Home() {
               <div className="mt-2 text-[10px] uppercase tracking-[0.3em] text-amber-100/60 sm:text-xs">
                 Search results for {searched}
               </div>
+
+              <div className="mt-2 text-sm italic text-[#d9b786] sm:text-base">
+                {resolvedLocation.label}
+              </div>
+
+              {resolvedLocation.latitude && resolvedLocation.longitude && (
+                <div className="mt-1 text-[10px] uppercase tracking-[0.18em] text-[#9f8f78] sm:text-xs">
+                  {resolvedLocation.latitude}, {resolvedLocation.longitude}
+                </div>
+              )}
             </div>
           </div>
 
